@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Update package list and install pacman4console
+echo "Installing pacman4console..."
+sudo apt update
+sudo apt install pacman4console -y
+
+# Create the script to start Pacman with terminal check and signal trapping
+echo "Creating start_pacman.sh script..."
+cat << 'EOF' | sudo tee /usr/local/bin/start_pacman.sh
+#!/bin/bash
+
 # Minimum terminal size required for pacman4console
 MIN_WIDTH=80
 MIN_HEIGHT=24
@@ -36,3 +46,18 @@ check_terminal_size
 cd /usr/games || { echo "Failed to change directory to /usr/games"; exit 1; }
 echo "Starting Pacman..."
 ./pacman4console
+EOF
+
+# Make the script executable
+sudo chmod +x /usr/local/bin/start_pacman.sh
+
+# Add the script to .bashrc to run on SSH login
+if ! grep -q "/usr/local/bin/start_pacman.sh" ~/.bashrc; then
+    echo "Adding start_pacman.sh to .bashrc..."
+    echo "/usr/local/bin/start_pacman.sh" >> ~/.bashrc
+else
+    echo "start_pacman.sh already present in .bashrc"
+fi
+
+# Inform the user
+echo "Installation complete! Pacman will start on the next SSH login, and Ctrl+C won't help you escape!"
